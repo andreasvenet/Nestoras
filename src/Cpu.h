@@ -88,6 +88,14 @@ private:
 	// depending on address mode of instruction byte
 	uint8_t fetch();
 
+  uint8_t fetched = 0x00; //working input value of the ALU
+  uint16_t temp = 0x0000; //convenience variable to be used anywhere
+  uint16_t addr_abs = 0x0000 //depending on addressing mode we might want to read from different locations from memory, this is used to store that location
+  uint16_t addr_rel = 0x00//we can jump a certain distance in the address space
+  uint8_t opcode = 0x00 //the instruction byte
+  uint8_t cycles = 0 //how many cycles has the operation remaining
+  uint32_t clock_count = 0 //global accummulation of the number of clocks
+
 
 
   struct INSTRUCTION
@@ -100,7 +108,7 @@ private:
 
 	std::vector<INSTRUCTION> lookup;
 
-    // Addressing modes
+  // Addressing modes
   uint8_t IMP();  uint8_t IMM();
   uint8_t ZP0();  uint8_t ZPX();
   uint8_t ZPY();  uint8_t REL();

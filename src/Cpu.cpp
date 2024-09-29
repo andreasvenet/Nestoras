@@ -39,11 +39,84 @@ void Cpu::write(uint16_t address, uint8_t data) {
 void Cpu::clock() {
   if (cycles == 0 ) {
     opcode = read(pc);
+
+	setFlag(U, true);
+
     pc++;
 
     // Get starting number of cycles
     cycles = lookup[opcode].cycles;
 
     uint8_t additional_cycle1 = (this->*lookup[opcode].addrmode)();
+	uint8_t additional_cycle2 = (this->*lookup[opcode].operate)();
+
+	cycles += (additional_cycle1 & additional_cycle2);
+	setFlag(U, true);
   }
+  clock_count++;
+  cycles--;
+}
+
+//ADDRESSING MODES
+uint8_t Cpu::IMP(){
+	fetched = a; //fetch contents of the accumulator
+	return 0;
+}
+
+uint8_t Cpu:IMM(){
+	addr_abs = pc++;
+	return 0;
+}
+
+uint8_t Cpu:ZP0(){
+	addr_abs = read(pc);
+	pc++;
+	addr_abs &= 0x00FF;
+	return 0;
+}
+
+uint8_t Cpu:ZPX(){
+	addr_abs = (read(pc) + x);
+	pc++;
+	addr_abs &= 0x00FF;
+	return 0;
+}
+
+uint8_t Cpu:ZPY(){
+	addr_abs = (read(pc) + y);
+	pc++;
+	addr_abs &= 0x00FF;
+	return 0;
+}
+uint8_t Cpu:REL(){
+	addr_rel = read(pc);
+	pc++;
+	if (addr_rel & 0x80)
+		addr_rel |= 0xFF00
+	return 0;
+}
+
+uint8_t Cpu:ABS(){
+	uint16_t lo = read(pc);
+	pc++;
+	uint16_t hi = read(pc);
+	pc++;
+
+	addr_abs = (hi << 8) | lo;
+	return 0;
+}
+
+uint8_t Cpu:ABX(){
+	uint16_t lo = read(pc);
+	pc++;
+	uint16_t hi = read(pc);
+	pc++;
+
+	addr_abs = (hi << 8) | lo;
+	addr_abs += x;
+
+	if ((addr_abs & 0xFF00) != (hi << 8))
+		return 1;
+	else
+		return 0;
 }
